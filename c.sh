@@ -45,15 +45,21 @@ if ! test -f lucid_dir/usr/bin/gcc; then
   test -x lucid_dir/usr/bin/make
 fi
 
-if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
+if ! test -f lucid_dir/tmp/perlsrc/Configure; then
   rm -rf lucid_dir/tmp/perl-5.10.1 lucid_dir/tmp/perlsrc
   (cd lucid_dir/tmp && tar xzvf ../../perl-5.10.1.tar.gz) || echo "$?"
   mv lucid_dir/tmp/perl-5.10.1 lucid_dir/tmp/perlsrc
   test -f lucid_dir/tmp/perlsrc/Configure
   test -f lucid_dir/tmp/perlsrc/perl.c
+fi
+
+if ! test -f lucid_dir/tmp/perlsrc/pts-xstatic/bin/xstatic; then
   (cd lucid_dir/tmp/perlsrc && ../../../pts-xstatic-latest.sfx.7z -y) || exit "$?"
   test -f lucid_dir/tmp/perlsrc/pts-xstatic/bin/xstatic
   test -x lucid_dir/tmp/perlsrc/pts-xstatic/bin/xstatic
+fi
+
+if ! test -f lucid_dir/tmp/perlsrc/Makefile; then
   (cd lucid_dir/tmp/perlsrc && patch -p1 <../../../patch-5.10.1.patch) || exit "$?"
   # !! What manual changes are we making to config-5.10.1.sh?
   ## SUXX: -Dusedl=n enables lots of modules linked statically
@@ -64,9 +70,15 @@ if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
   ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=n -Dstatic_ext="Cwd File/Glob Fcntl IO Socket Sys/Hostname B Compress/Raw/Bzip2 Compress/Raw/Zlib Data/Dumper Devel/DProf Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Filter/Util/Call Hash/Util Hash/Util/FieldHash I18N/Langinfo IO/Compress IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc Opcode POSIX PerlIO/encoding PerlIO/scalar PerlIO/via SDBM_File Storable Sys/Syslog Text/Soundex Time/HiRes Time/Piece Unicode/Normalize attrs mro re threads threads/shared Encode/Byte Encode/CN Encode/EBCDIC Encode/JP Encode/KR Encode/Symbol Encode/TW Encode/Unicode") || exit "$?"
   ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=y) || exit "$?"
   cp -a config-5.10.1.sh lucid_dir/tmp/perlsrc/config.sh
-  (cd lucid_dir/tmp/perlsrc && ../../../pts_chroot_env_qq.sh sh Configure -S) || exit "$?"  # Reads config.sh, runs **/*.SH to generate other files.
-  (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl perlmain.c) || exit "$?"
+  (cd lucid_dir/tmp/perlsrc && ../../../pts_chroot_env_qq.sh sh Configure -S) || exit "$?"  # Reads config.sh, runs **/*.SH to generate other files (e.g. Makefile).
+  test -f lucid_dir/tmp/perlsrc/Makefile
+fi
+
+if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
+  (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl) || exit "$?"
   #./setdata.py lucid_dir/tmp/perlsrc/miniperl ''  # Make the executable about 16 MiB shorter.
+  test -f lucid_dir/tmp/perlsrc/miniperl
+  test -x lucid_dir/tmp/perlsrc/miniperl
 fi
 
 if ! test -f lucid_dir/tmp/perlsrc/perl; then
@@ -80,6 +92,8 @@ fi
 lucid_dir/tmp/perlsrc/perl -e'exit(0)'
 lucid_dir/tmp/perlsrc/perl -e'use integer; exit(0)'
 lucid_dir/tmp/perlsrc/perl -e'glob("*")'
+# lucid_dir/tmp/perlsrc/miniperl is also (partially) useful: it doesn't have
+# any C extensions (e.g. File::Glob needed by glob("*").
 cp lucid_dir/tmp/perlsrc/perl perl-5.10.1
 
 if test -e lucid_dir/proc/self; then
