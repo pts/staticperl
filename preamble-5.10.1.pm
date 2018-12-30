@@ -1,6 +1,11 @@
-BEGIN { @INC = () }
-# Hello.
-# World.
+# The contents of this file will be embedded into the staticperl executable
+# and executed at startup as Perl code.
+#
+# Currently this file contains some mini package definitions: only a subset
+# of the Perl 5.10.1 packages, only Linux is supported, POD documentation
+# removed, comments removed, some features removed.
+#
+# Comments in the beginning of the line will be removed before embedding.
 package Exporter; BEGIN { $INC{"Exporter.pm"} = "Exporter.pm" }
 BEGIN {
 our $Debug = 0;
@@ -2192,6 +2197,7 @@ BEGIN {
 package XSLoader;
 $VERSION = "0.10";
 my $dl_dlext = 'none';
+# !! Remove DynaLoader and XSLoader.
 # Not needed for 'none':
 #   DynaLoader::boot_DynaLoader('DynaLoader') if defined(&DynaLoader::boot_DynaLoader) && !defined(&dl_error);
 sub load {
@@ -2299,10 +2305,6 @@ sub chdir {
   $newdir =~ s|///*|/|g unless $^O eq 'MSWin32';
   chdir_init() unless $chdir_init;
   my $newpwd;
-  if ($^O eq 'MSWin32') {
-    # get the full path name *before* the chdir()
-    $newpwd = Win32::GetFullPathName($newdir);
-  }
   return 0 unless CORE::chdir $newdir;
   # In case a file/dir handle is passed in.
   if (ref $newdir eq 'GLOB') {

@@ -5,8 +5,7 @@ set -ex
 test -f preamble-5.10.1.pm
 test -f patch-5.10.1.patch
 test -f config-5.10.1.sh
-test -f setdata.py
-test -x setdata.py
+test -f StaticPreamble.pm
 
 if ! test -f perl-5.10.1.tar.gz; then
   wget -O perl-5.10.1.tar.gz.tmp http://www.cpan.org/src/perl-5.10.1.tar.gz
@@ -67,17 +66,15 @@ if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
   cp -a config-5.10.1.sh lucid_dir/tmp/perlsrc/config.sh
   (cd lucid_dir/tmp/perlsrc && ../../../pts_chroot_env_qq.sh sh Configure -S) || exit "$?"  # Reads config.sh, runs **/*.SH to generate other files.
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl perlmain.c) || exit "$?"
-  ./setdata.py lucid_dir/tmp/perlsrc/miniperl ''  # Make the executable about 16 MiB shorter.
+  #./setdata.py lucid_dir/tmp/perlsrc/miniperl ''  # Make the executable about 16 MiB shorter.
 fi
 
 if ! test -f lucid_dir/tmp/perlsrc/perl; then
-  # !! rename prelude to preamble
-  # We need the eval q\0...\0, because everything in PL_Preambleav after an unescaped \n is ignored. But inside q... it's OK.
-  lucid_dir/tmp/perlsrc/miniperl -0777 -ne 's@^[ \t]*#.*\n?@@mg; $_="BEGIN{eval q\0$_\0; die\$\@if\$\@}"; s@\\@\\\\@g; print' <preamble-5.10.1.pm >lucid_dir/tmp/perlsrc/preamble2.pm
   # !! At some point no pts_chroot_env_qq.sh.
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make perl) || exit "$?"
   # !! No .py, reimplement in Perl, and run it like this: perl -e 'StaticPerlSrc::Set()' <mini-....pm
-  ./setdata.py lucid_dir/tmp/perlsrc/perl --stdin <lucid_dir/tmp/perlsrc/preamble2.pm
+  # !! lucid_dir/tmp/perlsrc/perl -w -Minteger -Mstrict-I. -e0 -mStaticPreamble=set stdin <preamble-5.10.1.pm
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin lucid_dir/tmp/perlsrc/perl <preamble-5.10.1.pm
 fi
 
 lucid_dir/tmp/perlsrc/perl -e'exit(0)'
