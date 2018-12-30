@@ -6,6 +6,9 @@
 # removed, comments removed, some features removed.
 #
 # Comments in the beginning of the line will be removed before embedding.
+#
+# This preamble works for both perl and miniperl (without C extensions).
+#
 package Exporter; BEGIN { $INC{"Exporter.pm"} = "Exporter.pm" }
 BEGIN {
 our $Debug = 0;
@@ -2192,25 +2195,9 @@ sub EVERY::ELSEWHERE::buildAUTOLOAD {
  package EVERY::LAST;   @ISA = 'EVERY';   EVERY::ELSEWHERE::buildAUTOLOAD();
  package EVERY;         @ISA = 'NEXT';    EVERY::ELSEWHERE::buildAUTOLOAD();
 }
-package XSLoader; BEGIN { $INC{"XSLoader.pm"} = "XSLoader.pm" }
 BEGIN {
-package XSLoader;
-$VERSION = "0.10";
-my $dl_dlext = 'none';
-# !! Remove DynaLoader and XSLoader.
-# Not needed for 'none':
-#   DynaLoader::boot_DynaLoader('DynaLoader') if defined(&DynaLoader::boot_DynaLoader) && !defined(&dl_error);
-sub load {
-  die if !@_;
-  my($module) = $_[0];
-  my $boots = "$module\::bootstrap";
-  goto &$boots if defined &$boots;
-  require Carp;
-  Carp::croak("missing XS bootstrap for module: $module");
-}
-}
-package File::Glob; BEGIN { $INC{"File/Glob.pm"} = "File/Glob.pm" }
-BEGIN {
+if (defined &File::Glob::bootstrap) {
+package File::Glob; BEGIN { $INC{"File/Glob.pm"} = "File/Glob.pm"; }
 use strict;
 our($VERSION, @ISA, @EXPORT_OK, @EXPORT_FAIL, %EXPORT_TAGS, $AUTOLOAD, $DEFAULT_FLAGS);
 @ISA = qw(Exporter);
@@ -2240,7 +2227,7 @@ sub import {
   goto &Exporter::import;
 }
 # Defines doglob, constant.
-require XSLoader; XSLoader::load('File::Glob', $VERSION);
+File::Glob::bootstrap($VERSION);
 {
   # E.g. GLOB_ABEND.
   for my $name (@EXPORT_OK) {
@@ -2262,8 +2249,10 @@ sub glob {
   goto &bsd_glob;
 }
 }
-package Cwd; BEGIN { $INC{"Cwd.pm"} = "Cwd.pm" }
+}
 BEGIN {
+if (defined &Cwd::bootstrap) {
+package Cwd; BEGIN { $INC{"Cwd.pm"} = "Cwd.pm" }
 use strict;
 use Exporter;
 use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
@@ -2271,7 +2260,7 @@ $VERSION = 3.30;
 @ISA = qw(Exporter);
 @EXPORT = qw(cwd getcwd fastcwd fastgetcwd);
 @EXPORT_OK = qw(chdir abs_path realpath fast_realpath);
-require XSLoader; XSLoader::load('Cwd', "$VERSION");
+Cwd::bootstrap("$VERSION");
 *cwd = \&getcwd;
 *fastgetcwd = \&getcwd;
 *realpath = \&abs_path;
@@ -2323,6 +2312,7 @@ sub chdir {
     $ENV{'PWD'} = join('/',@curdir) || '/';
   }
   1;
+}
 }
 }
 1;

@@ -80,8 +80,7 @@ fi
 
 if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl) || exit "$?"
-  # !! bootstrap: lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
-  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set ''  # Just strip and truncate (make the miniperl executable 16 MiB smaller).
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
   test -f lucid_dir/tmp/perlsrc/miniperl
   test -x lucid_dir/tmp/perlsrc/miniperl
 fi
@@ -93,7 +92,7 @@ if ! test -f lucid_dir/tmp/perlsrc/perl; then
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make perl) || exit "$?"
   # Too early to specify: -Minteger -Mstrict
   lucid_dir/tmp/perlsrc/perl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
-  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set ''  # Just strip and truncate (make the miniperl executable 16 MiB smaller).
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
 fi
 
 lucid_dir/tmp/perlsrc/perl -e'exit(0)'
