@@ -1,2 +1,0 @@
-preamble-5.10.1.pm was copy-pasted manually
-by pts@fazekas.hu at Fri Nov 26 20:46:57 CET 2010
