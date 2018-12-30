@@ -87,10 +87,13 @@ if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
 fi
 
 if ! test -f lucid_dir/tmp/perlsrc/perl; then
+  # '.' in @INC is needed by `make perl'.
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set 'unshift @INC, "."'  # Just strip and truncate (make the miniperl executable 16 MiB smaller).
   # !! At some point no pts_chroot_env_qq.sh.
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make perl) || exit "$?"
   # Too early to specify: -Minteger -Mstrict
   lucid_dir/tmp/perlsrc/perl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set ''  # Just strip and truncate (make the miniperl executable 16 MiB smaller).
 fi
 
 lucid_dir/tmp/perlsrc/perl -e'exit(0)'

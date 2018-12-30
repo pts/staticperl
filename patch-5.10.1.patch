@@ -82,7 +82,7 @@
  	if (!macperl)
  	    macperl = "";
  	
-@@ -4900,69 +4912,69 @@
+@@ -4900,73 +4912,73 @@
  	
     	SvREFCNT_dec(privdir);
      }
@@ -155,14 +155,20 @@
 +    /*incpush(PERL_OTHERLIBDIRS, TRUE, TRUE, TRUE, TRUE);*/
  #endif
  
-     if (!PL_tainting)
- 	incpush(".", FALSE, FALSE, TRUE, FALSE);
+-    if (!PL_tainting)
+-	incpush(".", FALSE, FALSE, TRUE, FALSE);
++    /*if (!PL_tainting)
++	incpush(".", FALSE, FALSE, TRUE, FALSE);*/
  #endif /* MACOS_TRADITIONAL */
  }
  
  #if defined(DOSISH) || defined(EPOC) || defined(__SYMBIAN32__)
  #    define PERLLIB_SEP ';'
  #else
+ #  if defined(VMS)
+ #    define PERLLIB_SEP '|'
+ #  else
+ #    if defined(MACOS_TRADITIONAL)
 --- perl-5.10.1.orig/Configure	2009-08-18 21:03:53.000000000 +0200
 +++ perl-5.10.1/Configure	2010-11-26 21:00:01.284891584 +0100
 @@ -5139,25 +5139,25 @@
