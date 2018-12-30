@@ -2209,6 +2209,8 @@ sub EVERY::ELSEWHERE::buildAUTOLOAD {
 }
 BEGIN {
 if (defined &File::Glob::bootstrap) {
+# miniperl doesn't have File::Glob::botstrap, so it implements glob("*") by
+# calling /bin/sh echo * as a workaround.
 package File::Glob; BEGIN { $INC{"File/Glob.pm"} = "File/Glob.pm"; }
 use strict;
 our($VERSION, @ISA, @EXPORT_OK, @EXPORT_FAIL, %EXPORT_TAGS, $AUTOLOAD, $DEFAULT_FLAGS);
@@ -2264,6 +2266,8 @@ sub glob {
 }
 BEGIN {
 if (defined &Cwd::bootstrap) {
+# miniperl doesn't have Cwd::bootstrap, so it doesn't provide cwd
+# functionality.
 package Cwd; BEGIN { $INC{"Cwd.pm"} = "Cwd.pm" }
 use strict;
 use Exporter;
