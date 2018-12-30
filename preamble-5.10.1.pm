@@ -9,6 +9,16 @@
 #
 # This preamble works for both perl and miniperl (without C extensions).
 #
+# TODO(pts): Add support for these modules in /usr/lib/perl/5.10.1
+#   -rw-r--r-- 1 root root   997 Apr 23  2010 /usr/lib/perl/5.10.1/ops.pm
+#   -rw-r--r-- 1 root root  2765 Apr 23  2010 /usr/lib/perl/5.10.1/Config.pm
+#   -rw-r--r-- 1 root root  3131 Apr 23  2010 /usr/lib/perl/5.10.1/lib.pm
+#   -rw-r--r-- 1 root root  3468 Apr 23  2010 /usr/lib/perl/5.10.1/XSLoader.pm
+#   -rw-r--r-- 1 root root  3557 Apr 23  2010 /usr/lib/perl/5.10.1/Fcntl.pm
+#   -rw-r--r-- 1 root root 15490 Apr 23  2010 /usr/lib/perl/5.10.1/Opcode.pm
+#   -rw-r--r-- 1 root root 19892 Apr 23  2010 /usr/lib/perl/5.10.1/encoding.pm
+#   -rw-r--r-- 1 root root 29731 Apr 23  2010 /usr/lib/perl/5.10.1/Encode.pm
+#
 package Exporter; BEGIN { $INC{"Exporter.pm"} = "Exporter.pm" }
 BEGIN {
 our $Debug = 0;
