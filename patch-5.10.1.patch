@@ -1,29 +1,6 @@
 --- perl-5.10.1.orig/perl.c	2009-04-22 20:07:41.000000000 +0200
 +++ perl-5.10.1/perl.c	2010-11-26 22:06:52.225163765 +0100
-@@ -89,20 +89,22 @@
- #ifdef NETWARE
- #include "nwutil.h"	
- char *nw_get_sitelib(const char *pl);
- #endif
- 
- /* XXX If this causes problems, set i_unistd=undef in the hint file.  */
- #ifdef I_UNISTD
- #include <unistd.h>
- #endif
- 
-+#include "mini_preamble.h"
-+
- #ifdef DEBUG_LEAKING_SCALARS_FORK_DUMP
- #  ifdef I_SYS_WAIT
- #   include <sys/wait.h>
- #  endif
- #  ifdef I_SYSUIO
- #    include <sys/uio.h>
- #  endif
- 
- union control_un {
-   struct cmsghdr cm;
-@@ -1511,20 +1513,23 @@
+@@ -1511,20 +1511,30 @@
  #else
  #ifdef OS2
  	sv_setpv(GvSVn(tmpgv), os2_execname(aTHX));
@@ -34,8 +11,15 @@
      }
  }
  
-+char do_add_mini_preamble = 0;
-+
++/* .dynbss will move it to the end of .data in the output file. */
++/* Using a struct to force 1-byte alignment (gcc-7.3 forces .align 4 in the .s file for __mode__(SI)). */
++/* Using a struct because gcc-7.3 puts global variables in reverse order in the .s file, gcc-4.4 puts them in normal order. */
++__attribute__((__aligned__(1), __section__(".dynbss"))) struct {
++  __attribute__((__packed__, __mode__(SI))) int size;
++  char data[1 << 24];  /* 16 MiB capacity for escaped preamble.pm. */
++  __attribute__((__packed__, __mode__(SI))) int size2;
++  __attribute__((__packed__, __mode__(SI))) int capacity;
++} mini_preamble = {0, "", sizeof(mini_preamble.data), sizeof(mini_preamble.data)};
 +
  /*
  =for apidoc perl_parse
@@ -47,7 +31,7 @@
  
  int
  perl_parse(pTHXx_ XSINIT_t xsinit, int argc, char **argv, char **env)
-@@ -1556,20 +1561,25 @@
+@@ -1556,20 +1566,22 @@
  	const char * const s = PerlEnv_getenv("PERL_HASH_SEED_DEBUG");
  
  	if (s && (atoi(s) == 1))
@@ -58,10 +42,7 @@
      PL_origargc = argc;
      PL_origargv = argv;
  
-+    if (do_add_mini_preamble) {
-+        /* SUXX: an unquoted newline is not allowed here (in PL_Preambleav) */
-+        Perl_av_create_and_push(aTHX_ &PL_preambleav, newSVpvn(mini_preamble, sizeof mini_preamble));
-+    }
++    Perl_av_create_and_push(aTHX_ &PL_preambleav, newSVpvn(mini_preamble.data, mini_preamble.size));
 +
      if (PL_origalen != 0) {
  	PL_origalen = 1; /* don't use old PL_origalen if perl_parse() is called again */
@@ -73,53 +54,6 @@
  	 * as the maximum modifiable length of $0.  In the worst case
  	 * the area we are able to modify is limited to the size of
  	 * the original argv[0].  (See below for 'contiguous', though.)
---- perl-5.10.1.orig/miniperlmain.c	2009-02-12 23:58:17.000000000 +0100
-+++ perl-5.10.1/miniperlmain.c	2010-11-26 22:27:49.474851364 +0100
-@@ -41,20 +41,22 @@
- 
- static void xs_init (pTHX);
- static PerlInterpreter *my_perl;
- 
- #if defined (__MINT__) || defined (atarist)
- /* The Atari operating system doesn't have a dynamic stack.  The
-    stack size is determined from this value.  */
- long _stksize = 64 * 1024;
- #endif
- 
-+extern char do_add_mini_preamble;
-+
- #if defined(PERL_GLOBAL_STRUCT_PRIVATE)
- /* The static struct perl_vars* may seem counterproductive since the
-  * whole idea PERL_GLOBAL_STRUCT_PRIVATE was to avoid statics, but note
-  * that this static is not in the shared perl library, the globals PL_Vars
-  * and PL_VarsPtr will stay away. */
- static struct perl_vars* my_plvarsp;
- struct perl_vars* Perl_GetVarsPrivate(void) { return my_plvarsp; }
- #endif
- 
- #ifdef NO_ENV_ARRAY_IN_MAIN
-@@ -68,20 +70,21 @@
- {
-     dVAR;
-     int exitstatus;
- #ifdef PERL_GLOBAL_STRUCT
-     struct perl_vars *plvarsp = init_global_struct();
- #  ifdef PERL_GLOBAL_STRUCT_PRIVATE
-     my_vars = my_plvarsp = plvarsp;
- #  endif
- #endif /* PERL_GLOBAL_STRUCT */
-     (void)env;
-+    do_add_mini_preamble = 0;
- #ifndef PERL_USE_SAFE_PUTENV
-     PL_use_safe_putenv = 0;
- #endif /* PERL_USE_SAFE_PUTENV */
- 
-     /* if user wants control of gprof profiling off by default */
-     /* noop unless Configure is given -Accflags=-DPERL_GPROF_CONTROL */
-     PERL_GPROF_MONCONTROL(0);
- 
- #ifdef NO_ENV_ARRAY_IN_MAIN
-     PERL_SYS_INIT3(&argc,&argv,&environ);
 --- perl-5.10.1.orig/Configure	2009-08-18 21:03:53.000000000 +0200
 +++ perl-5.10.1/Configure	2010-11-26 21:00:01.284891584 +0100
 @@ -5139,25 +5139,25 @@
@@ -153,29 +87,3 @@
  for thisincl in $inclwanted; do
  	if $test -d $thisincl; then
  		if $test x$thisincl != x$usrinc; then
-@@ -11987,22 +11987,23 @@
- : see if prototype for drand48 is available
- echo " "
- set d_drand48proto drand48 $i_stdlib stdlib.h $i_unistd unistd.h
- eval $hasproto
- 
- : see if dup2 exists
- set dup2 d_dup2
- eval $inlibc
- 
- : see if eaccess exists
--set eaccess d_eaccess
--eval $inlibc
-+#set eaccess d_eaccess
-+#eval $inlibc
-+d_eaccess=undef
- 
- : see if endgrent exists
- set endgrent d_endgrent
- eval $inlibc
- 
- : see if this is an grp system
- set grp.h i_grp
- eval $inhdr
- 
- case "$i_grp" in

@@ -1,5 +1,7 @@
 BEGIN { @INC = () }
-package Exporter; BEGIN { $INC{"Exporter.pm"} = "Exporter.pm" } 
+# Hello.
+# World.
+package Exporter; BEGIN { $INC{"Exporter.pm"} = "Exporter.pm" }
 BEGIN {
 our $Debug = 0;
 our $ExportLevel = 0;
@@ -43,8 +45,7 @@ sub import {
    foreach (@_);
  }
  return export $pkg, $callpkg, ($args ? @_ : ()) if $heavy;
- local $SIG{__WARN__} = 
-  sub {require Carp; &Carp::carp};
+ local $SIG{__WARN__} = sub {require Carp; &Carp::carp};
  *{"$callpkg\::$_"} = \&{"$pkg\::$_"} foreach @_;
 }
 sub export_fail {
@@ -64,7 +65,7 @@ sub require_version {
  goto &{as_heavy()};
 }
 }
-package Carp; BEGIN { $INC{"Carp.pm"} = "Carp.pm" } 
+package Carp; BEGIN { $INC{"Carp.pm"} = "Carp.pm" }
 BEGIN {
 our $VERSION = '1.11';
 our $MaxEvalLen = 0;
@@ -87,7 +88,7 @@ sub confess { die  longmess  @_ }
 sub carp    { warn shortmess @_ }
 sub cluck   { warn longmess  @_ }
 }
-package strict; BEGIN { $INC{"strict.pm"} = "strict.pm" } 
+package strict; BEGIN { $INC{"strict.pm"} = "strict.pm" }
 BEGIN {
 $strict::VERSION = "1.04";
 %strict::bitmask = (
@@ -143,7 +144,6 @@ $VERSION = eval $VERSION;
   ENOTRECOVERABLE EACCES EBUSY E2BIG EPERM ELIBEXEC ETOOMANYREFS ELIBACC
   ENOTUNIQ ECOMM ERESTART ESOCKTNOSUPPORT EUNATCH ETIMEDOUT ENXIO ENODEV
   ETXTBSY EMLINK ECHILD EHOSTUNREACH EREMCHG ENOTEMPTY);
-  
 %EXPORT_TAGS = (
  POSIX => [qw(
   E2BIG EACCES EADDRINUSE EADDRNOTAVAIL EAFNOSUPPORT EAGAIN EALREADY
@@ -385,7 +385,7 @@ sub import {
   }
   next if grep $_->isa($base), ($inheritor, @bases);
   if (has_version($base)) {
-   ${$base.'::VERSION'} = '-1, set by base.pm' 
+   ${$base.'::VERSION'} = '-1, set by base.pm'
      unless defined ${$base.'::VERSION'};
   } else {
    my $sigdie;
@@ -447,7 +447,7 @@ sub inherit_fields {
  }
 }
 }
-package warnings; BEGIN { $INC{"warnings.pm"} = "warnings.pm" } 
+package warnings; BEGIN { $INC{"warnings.pm"} = "warnings.pm" }
 BEGIN {
 $warnings::VERSION = '1.06';
 %warnings::Offsets = (
@@ -625,8 +625,7 @@ sub bits
  }
  return $mask ;
 }
-sub import 
-{
+sub import {
  shift;
  my $catmask ;
  my $fatal = 0 ;
@@ -636,7 +635,6 @@ sub import
   $mask |= $Bits{'all'} ;
   $mask |= $DeadBits{'all'} if vec($mask, $Offsets{'all'}+1, 1);
  }
- 
  push @_, 'all' unless @_;
  foreach my $word ( @_ ) {
   if ($word eq 'FATAL') {
@@ -654,8 +652,7 @@ sub import
  }
  ${^WARNING_BITS} = $mask ;
 }
-sub unimport 
-{
+sub unimport {
  shift;
  my $catmask ;
  my $mask = ${^WARNING_BITS} ;
@@ -666,7 +663,7 @@ sub unimport
  push @_, 'all' unless @_;
  foreach my $word ( @_ ) {
   if ($word eq 'FATAL') {
-   next; 
+   next;
   } elsif ($catmask = $Bits{$word}) {
    $mask &= ~($catmask | $DeadBits{$word} | $All);
   } else
@@ -714,9 +711,8 @@ sub __chk
 sub _error_loc {
  require Carp::Heavy;
  goto &Carp::short_error_loc;
-}                                                             
-sub enabled
-{
+}
+sub enabled {
  Croaker("Usage: warnings::enabled([category])")
   unless @_ == 1 || @_ == 0 ;
  my ($callers_bitmask, $offset, $i) = __chk(@_) ;
@@ -751,9 +747,9 @@ sub warnif
  Carp::carp($message) ;
 }
 }
-package overload::numbers; BEGIN { $INC{"overload::numbers.pm"} = "overload::numbers.pm" } 
+package overload::numbers; BEGIN { $INC{"overload/numbers.pm"} = "overload/numbers.pm" }
 BEGIN {
-@overload::numbers::names = qw#
+@overload::numbers::names = qw`
  ()
  (${}
  (@{}
@@ -821,8 +817,8 @@ BEGIN {
  (.=
  (~~
  DESTROY
-#;
-@overload::numbers::enums = qw#
+`;
+@overload::numbers::enums = qw`
  fallback
  to_sv
  to_av
@@ -890,11 +886,11 @@ BEGIN {
  concat_ass
  smart
  DESTROY
-#;
+`;
 { my $i = 0; %overload::numbers::names = map { $_ => $i++ } @names }
 { my $i = 0; %overload::numbers::enums = map { $_ => $i++ } @enums }
 }
-package locale; BEGIN { $INC{"locale.pm"} = "locale.pm" } 
+package locale; BEGIN { $INC{"locale.pm"} = "locale.pm" }
 BEGIN {
 $locale::VERSION = '1.00';
 $locale::hint_bits = 0x4;
@@ -905,7 +901,7 @@ sub unimport {
  $^H &= ~$locale::hint_bits;
 }
 }
-package integer; BEGIN { $INC{"integer.pm"} = "integer.pm" } 
+package integer; BEGIN { $INC{"integer.pm"} = "integer.pm" }
 BEGIN {
 $integer::VERSION = '1.00';
 $integer::hint_bits = 0x1;
@@ -916,7 +912,7 @@ sub unimport {
  $^H &= ~$integer::hint_bits;
 }
 }
-package Symbol; BEGIN { $INC{"Symbol.pm"} = "Symbol.pm" } 
+package Symbol; BEGIN { $INC{"Symbol.pm"} = "Symbol.pm" }
 BEGIN {
 @ISA = qw(Exporter);
 @EXPORT = qw(gensym ungensym qualify qualify_to_ref);
@@ -972,7 +968,7 @@ sub delete_package ($) {
  delete $stem_symtab->{$leaf};
 }
 }
-package SelectSaver; BEGIN { $INC{"SelectSaver.pm"} = "SelectSaver.pm" } 
+package SelectSaver; BEGIN { $INC{"SelectSaver.pm"} = "SelectSaver.pm" }
 BEGIN{
 $SelectSaver::VERSION = '1.02';
 sub new {
@@ -987,7 +983,7 @@ sub DESTROY {
  select $$self;
 }
 }
-package utf8; BEGIN { $INC{"utf8.pm"} = "utf8.pm" } 
+package utf8; BEGIN { $INC{"utf8.pm"} = "utf8.pm" }
 BEGIN {
 $utf8::hint_bits = 0x00800000;
 $utf8::VERSION = '1.07';
@@ -1004,7 +1000,7 @@ sub AUTOLOAD {
  Carp::croak("Undefined subroutine $AUTOLOAD called");
 }
 }
-package bytes; BEGIN { $INC{"bytes.pm"} = "bytes.pm" } 
+package bytes; BEGIN { $INC{"bytes.pm"} = "bytes.pm" }
 BEGIN {
 $bytes::VERSION = '1.03';
 $bytes::hint_bits = 0x00000008;
@@ -1026,7 +1022,7 @@ sub substr ($$;$$);
 sub index ($$;$);
 sub rindex ($$;$);
 }
-package subs; BEGIN { $INC{"subs.pm"} = "subs.pm" } 
+package subs; BEGIN { $INC{"subs.pm"} = "subs.pm" }
 BEGIN {
 $subs::VERSION = '1.00';
 sub import {
@@ -1064,7 +1060,7 @@ sub import
  }
 }
 }
-package vars; BEGIN { $INC{"vars.pm"} = "vars.pm" } 
+package vars; BEGIN { $INC{"vars.pm"} = "vars.pm" }
 BEGIN {
 $vars::VERSION = '1.01';
 use warnings::register;
@@ -1090,7 +1086,7 @@ sub import {
      : $ch eq "\@" ? \@$sym
      : $ch eq "\%" ? \%$sym
      : $ch eq "\*" ? \*$sym
-     : $ch eq "\&" ? \&$sym 
+     : $ch eq "\&" ? \&$sym
      : do {
       Carp::croak("'$_' is not a valid variable name");
      });
@@ -1100,7 +1096,7 @@ sub import {
  }
 };
 }
-package version; BEGIN { $INC{"version.pm"} = "version.pm" } 
+package version; BEGIN { $INC{"version.pm"} = "version.pm" }
 BEGIN {
 use strict;
 use vars qw(@ISA $VERSION $CLASS *declare *qv);
@@ -1123,12 +1119,9 @@ sub import {
    'UNIVERSAL::VERSION' => 1,
   );
  }
- 
  my $callpkg = caller();
- 
  if (exists($args{declare})) {
-  *{$callpkg."::declare"} = 
-   sub {return $class->declare(shift) }
+  *{$callpkg."::declare"} = sub {return $class->declare(shift) }
     unless defined(&{$callpkg.'::declare'});
  }
  if (exists($args{qv})) {
@@ -1141,13 +1134,13 @@ sub import {
  }
 }
 }
-package if; BEGIN { $INC{"if.pm"} = "if.pm" } 
+package if; BEGIN { $INC{"if.pm"} = "if.pm" }
 BEGIN {
 $VERSION = '0.05';
 sub work {
   my $method = shift() ? 'import' : 'unimport';
   die "Too few arguments to `use if' (some code returning an empty list in list context?)"
- unless @_ >= 2;
+      if @_ < 2;
   return unless shift;
   my $p = $_[0];
   (my $file = "$p.pm") =~ s!::!/!g;
@@ -1158,7 +1151,7 @@ sub work {
 sub import   { shift; unshift @_, 1; goto &work }
 sub unimport { shift; unshift @_, 0; goto &work }
 }
-package overloading; BEGIN { $INC{"overloading.pm"} = "overloading.pm" } 
+package overloading; BEGIN { $INC{"overloading.pm"} = "overloading.pm" }
 BEGIN {
 use warnings;
 use Carp ();
@@ -1197,7 +1190,7 @@ sub unimport {
  $^H |= $HINT_NO_AMAGIC;
 }
 }
-package DirHandle; BEGIN { $INC{"DirHandle.pm"} = "DirHandle.pm" } 
+package DirHandle; BEGIN { $INC{"DirHandle.pm"} = "DirHandle.pm" }
 BEGIN {
 $DirHandle::VERSION = '1.03';
 use Carp;
@@ -1239,7 +1232,7 @@ sub rewind {
  rewinddir($dh);
 }
 }
-package attributes; BEGIN { $INC{"attributes.pm"} = "attributes.pm" } 
+package attributes; BEGIN { $INC{"attributes.pm"} = "attributes.pm" }
 BEGIN {
 $attributes::VERSION = 0.09;
 @EXPORT_OK = qw(get reftype);
@@ -1307,7 +1300,7 @@ sub get ($) {
 }
 sub require_version { goto &UNIVERSAL::VERSION }
 }
-package parent; BEGIN { $INC{"parent.pm"} = "parent.pm" } 
+package parent; BEGIN { $INC{"parent.pm"} = "parent.pm" }
 BEGIN {
 use strict;
 use vars qw($VERSION);
@@ -1332,7 +1325,7 @@ sub import {
  };
 };
 }
-package less; BEGIN { $INC{"less.pm"} = "less.pm" } 
+package less; BEGIN { $INC{"less.pm"} = "less.pm" }
 BEGIN {
 use strict;
 use warnings;
@@ -1384,7 +1377,7 @@ sub unimport {
  return;
 }
 }
-package constant; BEGIN { $INC{"constant.pm"} = "constant.pm" } 
+package constant; BEGIN { $INC{"constant.pm"} = "constant.pm" }
 BEGIN {
 use strict;
 use warnings::register;
@@ -1465,7 +1458,7 @@ sub import {
  }
 }
 }
-package filetest; BEGIN { $INC{"filetest.pm"} = "filetest.pm" } 
+package filetest; BEGIN { $INC{"filetest.pm"} = "filetest.pm" }
 BEGIN {
 $filetest::VERSION = '1.02';
 $filetest::hint_bits = 0x00400000;
@@ -1484,7 +1477,7 @@ sub unimport {
  }
 }
 }
-package overload; BEGIN { $INC{"overload.pm"} = "overload.pm" } 
+package overload; BEGIN { $INC{"overload.pm"} = "overload.pm" }
 BEGIN {
 $overload::VERSION = '1.07';
 sub nil {}
@@ -1627,7 +1620,7 @@ sub remove_constant {
   }
 }
 }
-package English; BEGIN { $INC{"English.pm"} = "English.pm" } 
+package English; BEGIN { $INC{"English.pm"} = "English.pm" }
 BEGIN {
 $English::VERSION = '1.04';
 @ISA = qw(Exporter);
@@ -1776,7 +1769,7 @@ sub import {
   *OLD_PERL_VERSION   = *] ;
  #*"
 }
-package feature; BEGIN { $INC{"feature.pm"} = "feature.pm" } 
+package feature; BEGIN { $INC{"feature.pm"} = "feature.pm" }
 BEGIN {
 $feature::VERSION = '1.13';
 my %feature = (
@@ -1852,7 +1845,7 @@ sub croak {
  Carp::croak(@_);
 }
 }
-package sort; BEGIN { $INC{"sort.pm"} = "sort.pm" } 
+package sort; BEGIN { $INC{"sort.pm"} = "sort.pm" }
 BEGIN {
 $sort::VERSION = '2.01';
 $sort::quicksort_bit   = 0x00000001;
@@ -1913,7 +1906,7 @@ sub current {
  join(' ', @sort);
 }
 }
-package UNIVERSAL; BEGIN { $INC{"UNIVERSAL.pm"} = "UNIVERSAL.pm" } 
+package UNIVERSAL; BEGIN { $INC{"UNIVERSAL.pm"} = "UNIVERSAL.pm" }
 BEGIN {
 $UNIVERSAL::VERSION = '1.05';
 @EXPORT_OK = qw(isa can VERSION);
@@ -1922,7 +1915,7 @@ sub import {
  goto &Exporter::import;
 }
 }
-package open; BEGIN { $INC{"open.pm"} = "open.pm" } 
+package open; BEGIN { $INC{"open.pm"} = "open.pm" }
 BEGIN {
 $open::VERSION = '1.07';
 my $locale_encoding;
@@ -2029,7 +2022,7 @@ sub import {
  }
 }
 }
-package NEXT; BEGIN { $INC{"NEXT.pm"} = "NEXT.pm" } 
+package NEXT; BEGIN { $INC{"NEXT.pm"} = "NEXT.pm" }
 BEGIN {
 $VERSION = '0.64';
 use Carp;
@@ -2193,5 +2186,141 @@ sub EVERY::ELSEWHERE::buildAUTOLOAD {
 }
  package EVERY::LAST;   @ISA = 'EVERY';   EVERY::ELSEWHERE::buildAUTOLOAD();
  package EVERY;         @ISA = 'NEXT';    EVERY::ELSEWHERE::buildAUTOLOAD();
+}
+package XSLoader; BEGIN { $INC{"XSLoader.pm"} = "XSLoader.pm" }
+BEGIN {
+package XSLoader;
+$VERSION = "0.10";
+my $dl_dlext = 'none';
+# Not needed for 'none':
+#   DynaLoader::boot_DynaLoader('DynaLoader') if defined(&DynaLoader::boot_DynaLoader) && !defined(&dl_error);
+sub load {
+  die if !@_;
+  my($module) = $_[0];
+  my $boots = "$module\::bootstrap";
+  goto &$boots if defined &$boots;
+  require Carp;
+  Carp::croak("missing XS bootstrap for module: $module");
+}
+}
+package File::Glob; BEGIN { $INC{"File/Glob.pm"} = "File/Glob.pm" }
+BEGIN {
+use strict;
+our($VERSION, @ISA, @EXPORT_OK, @EXPORT_FAIL, %EXPORT_TAGS, $AUTOLOAD, $DEFAULT_FLAGS);
+@ISA = qw(Exporter);
+@EXPORT_OK = qw(bsd_glob glob GLOB_ABEND GLOB_ALPHASORT GLOB_ALTDIRFUNC
+GLOB_BRACE GLOB_CSH GLOB_ERR GLOB_ERROR GLOB_LIMIT GLOB_MARK GLOB_NOCASE
+GLOB_NOCHECK GLOB_NOMAGIC GLOB_NOSORT GLOB_NOSPACE GLOB_QUOTE GLOB_TILDE);
+%EXPORT_TAGS = ('glob' => [qw(GLOB_ABEND GLOB_ALPHASORT GLOB_ALTDIRFUNC
+GLOB_BRACE GLOB_CSH GLOB_ERR GLOB_ERROR GLOB_LIMIT GLOB_MARK GLOB_NOCASE
+GLOB_NOCHECK GLOB_NOMAGIC GLOB_NOSORT GLOB_NOSPACE GLOB_QUOTE GLOB_TILDE
+glob bsd_glob)]);
+$VERSION = '1.06';
+sub import {
+  # Segfault without this.
+  *CORE::GLOBAL::glob = \&File::Glob::csh_glob if 0;
+  require Exporter;
+  my $i = 1;
+  while ($i < @_) {
+    if ($_[$i] =~ /^:(case|nocase|globally)$/) {
+      splice(@_, $i, 1);
+      $DEFAULT_FLAGS &= ~GLOB_NOCASE() if $1 eq 'case';
+      $DEFAULT_FLAGS |= GLOB_NOCASE() if $1 eq 'nocase';
+      die "unsupported: globally\n" if $1 eq 'globally';
+      next;
+    }
+    ++$i;
+  }
+  goto &Exporter::import;
+}
+# Defines doglob, constant.
+require XSLoader; XSLoader::load('File::Glob', $VERSION);
+{
+  # E.g. GLOB_ABEND.
+  for my $name (@EXPORT_OK) {
+    my ($error, $val) = constant($name);
+    eval "sub $name { $val }" if !$error;
+  }
+}
+sub GLOB_CSH() {
+  GLOB_BRACE() | GLOB_NOMAGIC() | GLOB_QUOTE() | GLOB_TILDE() | GLOB_ALPHASORT()
+}
+$DEFAULT_FLAGS = GLOB_CSH();
+sub bsd_glob {
+  my ($pat,$flags) = @_;
+  $flags = $DEFAULT_FLAGS if @_ < 2;
+  return doglob($pat,$flags);
+}
+sub glob {
+  splice @_, 1;
+  goto &bsd_glob;
+}
+}
+package Cwd; BEGIN { $INC{"Cwd.pm"} = "Cwd.pm" }
+BEGIN {
+use strict;
+use Exporter;
+use vars qw(@ISA @EXPORT @EXPORT_OK $VERSION);
+$VERSION = 3.30;
+@ISA = qw(Exporter);
+@EXPORT = qw(cwd getcwd fastcwd fastgetcwd);
+@EXPORT_OK = qw(chdir abs_path realpath fast_realpath);
+require XSLoader; XSLoader::load('Cwd', "$VERSION");
+*cwd = \&getcwd;
+*fastgetcwd = \&getcwd;
+*realpath = \&abs_path;
+# Keeps track of current working directory in PWD environment var
+# Usage: use Cwd 'chdir'; chdir $newdir;
+my $chdir_init = 0;
+sub chdir_init {
+  if ($ENV{'PWD'}) {
+    my($dd,$di) = stat('.');
+    my($pd,$pi) = stat($ENV{'PWD'});
+    if (!defined $dd or !defined $pd or $di != $pi or $dd != $pd) {
+      $ENV{'PWD'} = cwd();
+    }
+  } else {
+    my $wd = cwd();
+    $ENV{'PWD'} = $wd;
+  }
+  # Strip an automounter prefix (where /tmp_mnt/foo/bar == /foo/bar)
+  if ($ENV{'PWD'} =~ m|(/[^/]+(/[^/]+/[^/]+))(.*)|s) {
+    my($pd,$pi) = stat($2);
+    my($dd,$di) = stat($1);
+    if (defined $pd and defined $dd and $di == $pi and $dd == $pd) {
+      $ENV{'PWD'}="$2$3";
+    }
+  }
+  $chdir_init = 1;
+}
+sub chdir {
+  # Allow for no arg (chdir to HOME dir).
+  my $newdir = @_ ? shift : '';
+  $newdir =~ s|///*|/|g unless $^O eq 'MSWin32';
+  chdir_init() unless $chdir_init;
+  my $newpwd;
+  if ($^O eq 'MSWin32') {
+    # get the full path name *before* the chdir()
+    $newpwd = Win32::GetFullPathName($newdir);
+  }
+  return 0 unless CORE::chdir $newdir;
+  # In case a file/dir handle is passed in.
+  if (ref $newdir eq 'GLOB') {
+    $ENV{'PWD'} = cwd();
+  } elsif ($newdir =~ m#^/#s) {
+    $ENV{'PWD'} = $newdir;
+  } else {
+    my @curdir = split(m#/#,$ENV{'PWD'});
+    @curdir = ('') unless @curdir;
+    my $component;
+    foreach $component (split(m#/#, $newdir)) {
+      next if $component eq '.';
+      pop(@curdir),next if $component eq '..';
+      push(@curdir,$component);
+    }
+    $ENV{'PWD'} = join('/',@curdir) || '/';
+  }
+  1;
+}
 }
 1

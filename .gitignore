@@ -1,2 +1,7 @@
 *~
 /perl-5.10.1.tar.gz
+/pts-xstatic-latest.sfx.7z
+/*.tmp
+/lucid_dir
+/perl-5.10.1
+/pts_chroot_env_qq.sh

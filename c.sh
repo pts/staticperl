@@ -1,27 +1,97 @@
 #! /bin/bash --
-# by pts@fazekas.hu at Fri Nov 26 22:15:42 CET 2010
+# by pts@fazekas.hu at Thu Dec 27 15:35:44 CET 2018
 set -ex
-export PREFIX=/usr/local/google/more-compiler-i686/bin/i686-
-export CC='/usr/local/google/more-compiler-i686/bin/i686-gcc -static'
-if ! test -f perl-5.10.1.tar.gz.downloaded; then
-  wget -c -O perl-5.10.1.tar.gz http://www.cpan.org/src/perl-5.10.1.tar.gz
-  touch perl-5.10.1.tar.gz.downloaded
+
+test -f preamble-5.10.1.pm
+test -f patch-5.10.1.patch
+test -f config-5.10.1.sh
+test -f setdata.py
+test -x setdata.py
+
+if ! test -f perl-5.10.1.tar.gz; then
+  wget -O perl-5.10.1.tar.gz.tmp http://www.cpan.org/src/perl-5.10.1.tar.gz
+  mv perl-5.10.1.tar.gz.tmp perl-5.10.1.tar.gz
 fi
-rm -rf mkperl.tmp
-mkdir mkperl.tmp
-rm -rf perl-5.10.1
-(cd mkperl.tmp && tar xzf ../perl-5.10.1.tar.gz)
-mv mkperl.tmp/perl-* mkperl.tmp/perlsrc
-chmod +w mkperl.tmp/perlsrc/miniperlmain.c mkperl.tmp/perlsrc/perl.c mkperl.tmp/perlsrc/Configure
-(cd mkperl.tmp/perlsrc && patch -p1 <../../patch--5.10.1.patch)
-cp Configure mkperl.tmp/perlsrc/Configure
-(cd mkperl.tmp/perlsrc && ./configure.gnu)
-echo 'char mini_preamble[1] = "";' >mkperl.tmp/perlsrc/mini_preamble.h
-(cd mkperl.tmp/perlsrc && make miniperl perlmain.c)
-mkperl.tmp/perlsrc/miniperl -0777 -ne '$_="BEGIN{eval q\0$_\0}"; my $L=length($_); s@\\@\\\\@g; my%H=("\n"=>"\\n","\0"=>"\\0");s@([\\"\n\0])@exists$H{$1}?$H{$1}:"\\$1"@ge;print"const char mini_preamble[$L] = \"$_\";\n"' <preamble-5.10.1.pm >mkperl.tmp/perlsrc/mini_preamble.h
-mkperl.tmp/perlsrc/miniperl -pi -e 's@(do_add_mini_preamble =) 0;@$1 1;@g' mkperl.tmp/perlsrc/perlmain.c
-(cd mkperl.tmp/perlsrc && make perl)
-cp mkperl.tmp/perlsrc/perl perl-5.10.1
-${PREFIX}strip perl-5.10.1
+if ! test -f pts-xstatic-latest.sfx.7z; then
+  wget -O pts-xstatic-latest.sfx.7z.tmp http://pts.50.hu/files/pts-xstatic/pts-xstatic-latest.sfx.7z
+  chmod +x pts-xstatic-latest.sfx.7z.tmp
+  mv pts-xstatic-latest.sfx.7z.tmp pts-xstatic-latest.sfx.7z
+fi
+
+if ! test -f pts_chroot_env_qq.sh; then
+  wget -O pts_chroot_env_qq.sh.tmp http://raw.githubusercontent.com/pts/pts-chroot-env-qq/master/pts_chroot_env_qq.sh
+  chmod +x pts_chroot_env_qq.sh.tmp
+  mv pts_chroot_env_qq.sh.tmp pts_chroot_env_qq.sh
+fi
+
+# TODO(pts): Add setup instructions for lucid_dir:
+if ! test -f lucid_dir/bin/bash; then
+  sudo umount lucid_dir/proc ||:
+  sudo umount lucid_dir/dev/pts ||:
+  rm -rf lucid_dir lucid_dir.tmp
+  ./pts_chroot_env_qq.sh pts-debootstrap lucid lucid_dir.tmp  # Ubuntu 10.04 Lucid Lynx.
+  mv lucid_dir.tmp lucid_dir
+  test -f lucid_dir/bin/bash
+  test -x lucid_dir/bin/bash
+else
+  (cd lucid_dir && ../pts_chroot_env_qq.sh cd) || exit "$?"  # Trigger sudo with password prompt.
+fi
+
+if ! test -f lucid_dir/usr/bin/gcc; then
+  (cd lucid_dir && ../pts_chroot_env_qq.sh apt-get update) || exit "$?"
+  (cd lucid_dir && ../pts_chroot_env_qq.sh apt-get -y install gcc make) || exit "$?"  # gcc-4.4
+  test -f lucid_dir/usr/bin/gcc
+  test -x lucid_dir/usr/bin/gcc
+  test -f lucid_dir/usr/bin/make
+  test -x lucid_dir/usr/bin/make
+fi
+
+if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
+  rm -rf lucid_dir/tmp/perl-5.10.1 lucid_dir/tmp/perlsrc
+  (cd lucid_dir/tmp && tar xzvf ../../perl-5.10.1.tar.gz) || echo "$?"
+  mv lucid_dir/tmp/perl-5.10.1 lucid_dir/tmp/perlsrc
+  test -f lucid_dir/tmp/perlsrc/Configure
+  test -f lucid_dir/tmp/perlsrc/perl.c
+  (cd lucid_dir/tmp/perlsrc && ../../../pts-xstatic-latest.sfx.7z -y) || exit "$?"
+  test -f lucid_dir/tmp/perlsrc/pts-xstatic/bin/xstatic
+  test -x lucid_dir/tmp/perlsrc/pts-xstatic/bin/xstatic
+  (cd lucid_dir/tmp/perlsrc && patch -p1 <../../../patch-5.10.1.patch) || exit "$?"
+  # !! What manual changes are we making to config-5.10.1.sh?
+  ## SUXX: -Dusedl=n enables lots of modules linked statically
+  ## !! Also add the .pm files for Fcntl IO Socket Sys/Hostname.
+  ## !! Generate lib/ and list of all possible modules.
+  ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=n -Dstatic_ext="") || exit "$?"
+  ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=n -Dstatic_ext="Cwd File/Glob") || exit "$?"
+  ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=n -Dstatic_ext="Cwd File/Glob Fcntl IO Socket Sys/Hostname B Compress/Raw/Bzip2 Compress/Raw/Zlib Data/Dumper Devel/DProf Devel/PPPort Devel/Peek Digest/MD5 Digest/SHA Encode Filter/Util/Call Hash/Util Hash/Util/FieldHash I18N/Langinfo IO/Compress IPC/SysV List/Util MIME/Base64 Math/BigInt/FastCalc Opcode POSIX PerlIO/encoding PerlIO/scalar PerlIO/via SDBM_File Storable Sys/Syslog Text/Soundex Time/HiRes Time/Piece Unicode/Normalize attrs mro re threads threads/shared Encode/Byte Encode/CN Encode/EBCDIC Encode/JP Encode/KR Encode/Symbol Encode/TW Encode/Unicode") || exit "$?"
+  ##(cd lucid_dir/tmp/perlsrc && ./pts_chroot_env_qq.sh sh Configure -ds -e -Dusedl=y) || exit "$?"
+  cp -a config-5.10.1.sh lucid_dir/tmp/perlsrc/config.sh
+  (cd lucid_dir/tmp/perlsrc && ../../../pts_chroot_env_qq.sh sh Configure -S) || exit "$?"  # Reads config.sh, runs **/*.SH to generate other files.
+  (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl perlmain.c) || exit "$?"
+  ./setdata.py lucid_dir/tmp/perlsrc/miniperl ''  # Make the executable about 16 MiB shorter.
+fi
+
+if ! test -f lucid_dir/tmp/perlsrc/perl; then
+  # !! rename prelude to preamble
+  # We need the eval q\0...\0, because everything in PL_Preambleav after an unescaped \n is ignored. But inside q... it's OK.
+  lucid_dir/tmp/perlsrc/miniperl -0777 -ne 's@^[ \t]*#.*\n?@@mg; $_="BEGIN{eval q\0$_\0; die\$\@if\$\@}"; s@\\@\\\\@g; print' <preamble-5.10.1.pm >lucid_dir/tmp/perlsrc/preamble2.pm
+  # !! At some point no pts_chroot_env_qq.sh.
+  (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make perl) || exit "$?"
+  # !! No .py, reimplement in Perl, and run it like this: perl -e 'StaticPerlSrc::Set()' <mini-....pm
+  ./setdata.py lucid_dir/tmp/perlsrc/perl --stdin <lucid_dir/tmp/perlsrc/preamble2.pm
+fi
+
+lucid_dir/tmp/perlsrc/perl -e'exit(0)'
+lucid_dir/tmp/perlsrc/perl -e'use integer; exit(0)'
+lucid_dir/tmp/perlsrc/perl -e'glob("*")'
+cp lucid_dir/tmp/perlsrc/perl perl-5.10.1
+
+if test -e lucid_dir/proc/self; then
+  sudo umount lucid_dir/proc ||:
+fi
+if test -e lucid_dir/dev/pts/ptmx; then
+  sudo umount lucid_dir/dev/pts ||:
+fi
+
 ls -l perl-5.10.1
-: All OK.
+
+: c.sh OK.
