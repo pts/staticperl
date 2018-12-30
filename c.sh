@@ -74,9 +74,14 @@ if ! test -f lucid_dir/tmp/perlsrc/Makefile; then
   test -f lucid_dir/tmp/perlsrc/Makefile
 fi
 
+if ! test -f lucid_dir/tmp/perlsrc/preamble.pm; then
+  cat StaticPreamble.pm preamble-5.10.1.pm >lucid_dir/tmp/perlsrc/preamble.pm
+fi
+
 if ! test -f lucid_dir/tmp/perlsrc/miniperl; then
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make miniperl) || exit "$?"
-  #./setdata.py lucid_dir/tmp/perlsrc/miniperl ''  # Make the executable about 16 MiB shorter.
+  # !! bootstrap: lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
+  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set ''  # Just strip and truncate (make the miniperl executable 16 MiB smaller).
   test -f lucid_dir/tmp/perlsrc/miniperl
   test -x lucid_dir/tmp/perlsrc/miniperl
 fi
@@ -84,9 +89,8 @@ fi
 if ! test -f lucid_dir/tmp/perlsrc/perl; then
   # !! At some point no pts_chroot_env_qq.sh.
   (cd lucid_dir/tmp/perlsrc && PATH="$PWD/pts-xstatic/bin:$PATH" ../../../pts_chroot_env_qq.sh make perl) || exit "$?"
-  # !! No .py, reimplement in Perl, and run it like this: perl -e 'StaticPerlSrc::Set()' <mini-....pm
-  # !! lucid_dir/tmp/perlsrc/perl -w -Minteger -Mstrict-I. -e0 -mStaticPreamble=set stdin <preamble-5.10.1.pm
-  lucid_dir/tmp/perlsrc/miniperl -w -I. -e0 -mStaticPreamble=set stdin lucid_dir/tmp/perlsrc/perl <preamble-5.10.1.pm
+  # Too early to specify: -Minteger -Mstrict
+  lucid_dir/tmp/perlsrc/perl -w -I. -e0 -mStaticPreamble=set stdin <lucid_dir/tmp/perlsrc/preamble.pm
 fi
 
 lucid_dir/tmp/perlsrc/perl -e'exit(0)'
@@ -94,7 +98,7 @@ lucid_dir/tmp/perlsrc/perl -e'use integer; exit(0)'
 lucid_dir/tmp/perlsrc/perl -e'glob("*")'
 # lucid_dir/tmp/perlsrc/miniperl is also (partially) useful: it doesn't have
 # any C extensions (e.g. File::Glob needed by glob("*").
-cp lucid_dir/tmp/perlsrc/perl perl-5.10.1
+cp lucid_dir/tmp/perlsrc/perl staticperl-5.10.1
 
 if test -e lucid_dir/proc/self; then
   sudo umount lucid_dir/proc ||:
@@ -103,6 +107,6 @@ if test -e lucid_dir/dev/pts/ptmx; then
   sudo umount lucid_dir/dev/pts ||:
 fi
 
-ls -l perl-5.10.1
+ls -l staticperl-5.10.1
 
 : c.sh OK.

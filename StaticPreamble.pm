@@ -25,7 +25,7 @@ sub import {
   if (defined($data)) {
     # Remove comments.
     $data =~ s@^[ \t]*#.*\n?@@mg;
-    $data =~ s@\s+\Z(?!\n)@@;
+    $data =~ s@[\s;]+\Z(?!\n)@@;
     $data .= substr($data, -1) eq '}' ? "\n1" : "\n;1" if
         substr($data, -1) ne '1';
     $data =~ s@\\@\\\\@g;
@@ -132,11 +132,11 @@ sub import {
     die "fatal: Bad old data prefix.\n".substr($data,0,100) if
         $data !~ s@\ABEGIN\{(?:[\@]INC=\(\); ?)?eval q\0@@;
     die "fatal: Bad old data suffix.\n" if
-        $data !~ s@\n+;?1\n?\0; ?die\$[\@]if\$\@\}\n?\Z(?!\n)@\n1\n@;
+        $data !~ s@\n+;?1;?\n?\0; ?die\$[\@]if\$\@\}\n?\Z(?!\n)@\n1;\n@;
     my %r = ("\\"=>"\\", "0"=>"\0");
     $data =~ s@\\([\\\0])@$r{$1}@ge;
     print $data;
   }
 }
 }
-1
+1;
