@@ -1162,6 +1162,7 @@ sub unimport { shift; unshift @_, 0; goto &work }
 package overloading; BEGIN { $INC{"overloading.pm"} = "overloading.pm" }
 BEGIN {
 use warnings;
+no warnings qw(redefine);
 use Carp ();
 $overloading::VERSION = '0.01';
 my $HINT_NO_AMAGIC = 0x01000000;
@@ -1337,6 +1338,7 @@ package less; BEGIN { $INC{"less.pm"} = "less.pm" }
 BEGIN {
 use strict;
 use warnings;
+no warnings qw(redefine);
 $less::VERSION = '0.02';
 sub _pack_tags {
  return join ' ', @_;
