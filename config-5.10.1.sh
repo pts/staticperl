@@ -61,7 +61,7 @@ byteorder='1234'
 c=''
 castflags='0'
 cat='cat'
-cc="xstatic gcc -fno-pic"
+cc="xstatic gcc -fno-pic -march=i686 -mtune=generic"
 cccdlflags=''
 ccdlflags=''
 ccflags='-fno-strict-aliasing -pipe -I/usr/local/include -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64'
