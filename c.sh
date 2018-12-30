@@ -13,12 +13,12 @@ rm -rf perl-5.10.1
 (cd mkperl.tmp && tar xzf ../perl-5.10.1.tar.gz)
 mv mkperl.tmp/perl-* mkperl.tmp/perlsrc
 chmod +w mkperl.tmp/perlsrc/miniperlmain.c mkperl.tmp/perlsrc/perl.c mkperl.tmp/perlsrc/Configure
-(cd mkperl.tmp/perlsrc && patch -p1 <../../pts-perl-static-5.10.1.patch)
+(cd mkperl.tmp/perlsrc && patch -p1 <../../patch--5.10.1.patch)
 cp Configure mkperl.tmp/perlsrc/Configure
 (cd mkperl.tmp/perlsrc && ./configure.gnu)
 echo 'char mini_preamble[1] = "";' >mkperl.tmp/perlsrc/mini_preamble.h
 (cd mkperl.tmp/perlsrc && make miniperl perlmain.c)
-mkperl.tmp/perlsrc/miniperl -0777 -ne '$_="BEGIN{eval q\0$_\0}"; my $L=length($_); s@\\@\\\\@g; my%H=("\n"=>"\\n","\0"=>"\\0");s@([\\"\n\0])@exists$H{$1}?$H{$1}:"\\$1"@ge;print"const char mini_preamble[$L] = \"$_\";\n"' <mini-prelude-5.10.1.pm >mkperl.tmp/perlsrc/mini_preamble.h
+mkperl.tmp/perlsrc/miniperl -0777 -ne '$_="BEGIN{eval q\0$_\0}"; my $L=length($_); s@\\@\\\\@g; my%H=("\n"=>"\\n","\0"=>"\\0");s@([\\"\n\0])@exists$H{$1}?$H{$1}:"\\$1"@ge;print"const char mini_preamble[$L] = \"$_\";\n"' <preamble-5.10.1.pm >mkperl.tmp/perlsrc/mini_preamble.h
 mkperl.tmp/perlsrc/miniperl -pi -e 's@(do_add_mini_preamble =) 0;@$1 1;@g' mkperl.tmp/perlsrc/perlmain.c
 (cd mkperl.tmp/perlsrc && make perl)
 cp mkperl.tmp/perlsrc/perl perl-5.10.1
