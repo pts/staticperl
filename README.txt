@@ -21,9 +21,9 @@ Usage
 ~~~~~
 On a Linux i386 or amd64 system, run
 
-  $ wget -O  staticperl http://github.com/pts/staticperl/releases/download/v2/staticperl-5.10.1.v2
-  $ chmod +x staticperl
-  $ ./staticperl -e 'print "Hello, World!\n"
+  $ wget -O  staticperl-5.10.1 http://github.com/pts/staticperl/releases/download/v2/staticperl-5.10.1.v2
+  $ chmod +x staticperl-5.10.1
+  $ ./staticperl-5.10.1 -e 'print "Hello, World!\n"
   Hello, World!
 
 How to add more Perl modules
@@ -55,7 +55,7 @@ Please note that it's not possible to add C extensions (.xs, .so) to
 staticperl without recompiling it, i.e. modifying and running c.sh.
 
 Executable compression
-`~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~
 It's possible to compress the staticperl executable with UPX. If done so
 (with `upx --best --lzma'), the file size goes down from 1.102 MiB to 0.416
 MiB.
